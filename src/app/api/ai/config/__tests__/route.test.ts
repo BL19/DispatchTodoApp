@@ -203,6 +203,34 @@ describe("AI Config API", () => {
     expect(res.status).toBe(400);
   });
 
+  it("PUT rejects non-http/https baseUrl (SSRF protection)", async () => {
+    const res = await PUT(
+      putReq({
+        provider: "openai",
+        model: "gpt-4o-mini",
+        apiKey: "sk-test",
+        baseUrl: "file:///etc/passwd",
+      }),
+      {},
+    );
+    expect(res.status).toBe(400);
+    const payload = await res.json();
+    expect(payload.error).toContain("HTTP or HTTPS");
+  });
+
+  it("PUT accepts valid https baseUrl", async () => {
+    const res = await PUT(
+      putReq({
+        provider: "openai",
+        model: "gpt-4o-mini",
+        apiKey: "sk-test-accept",
+        baseUrl: "https://api.openai.com/v1",
+      }),
+      {},
+    );
+    expect(res.status).toBe(200);
+  });
+
   it("clears saved api key when switching providers without a new key", async () => {
     const first = await PUT(
       putReq({

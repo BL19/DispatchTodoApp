@@ -132,6 +132,10 @@ export const PUT = withAdminAuth(async (req, session, ctx) => {
       return errorResponse("password must be at least 8 characters", 400);
     }
 
+    if (password.length > 128) {
+      return errorResponse("password must be at most 128 characters", 400);
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const [updated] = await db
       .update(users)

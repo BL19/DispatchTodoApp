@@ -80,6 +80,10 @@ export const POST = withAdminAuth(async (req) => {
     return errorResponse("password must be at least 8 characters", 400);
   }
 
+  if (password.length > 128) {
+    return errorResponse("password must be at most 128 characters", 400);
+  }
+
   if (name !== undefined && typeof name !== "string") {
     return errorResponse("name must be a string", 400);
   }

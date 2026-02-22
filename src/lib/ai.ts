@@ -81,6 +81,24 @@ export function normalizeBaseUrl(baseUrl: string | null | undefined): string | n
   return trimmed.replace(/\/+$/, "");
 }
 
+/**
+ * Validates that a provider base URL uses an allowed scheme (http or https).
+ * Returns false for file://, ftp://, or other potentially dangerous schemes.
+ * Returns true for null/undefined/empty strings — callers treat those as
+ * "use the provider default URL" and handle them separately.
+ */
+export function isValidProviderBaseUrl(baseUrl: string | null | undefined): boolean {
+  if (!baseUrl) return true;
+  const trimmed = baseUrl.trim();
+  if (!trimmed) return true;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function providerLabel(provider: AIProvider): string {
   switch (provider) {
     case "openai":

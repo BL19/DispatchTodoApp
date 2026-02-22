@@ -33,9 +33,13 @@ export async function POST(req: NextRequest) {
       return errorResponse("Invalid email format", 400);
     }
 
-    // Validate password strength (minimum 8 characters)
+    // Validate password strength (minimum 8, maximum 128 characters)
     if (password.length < 8) {
       return errorResponse("Password must be at least 8 characters", 400);
+    }
+
+    if (password.length > 128) {
+      return errorResponse("Password must be at most 128 characters", 400);
     }
 
     // Check if user already exists

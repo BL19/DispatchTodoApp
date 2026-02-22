@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { registerDispatchTools } from "@/mcp-server/tools/dispatches";
@@ -9,6 +10,7 @@ import { registerTaskTools } from "@/mcp-server/tools/tasks";
 
 const MCP_PORT = Number(process.env.MCP_PORT || 3001);
 const ALLOWED_ORIGINS = new Set(["http://localhost:3000", "http://127.0.0.1:3000"]);
+const MCP_AUTH_SECRET = process.env.MCP_AUTH_SECRET?.trim() || process.env.AUTH_SECRET?.trim() || null;
 
 function createDispatchMcpServer() {
   const server = new McpServer(
@@ -112,6 +114,17 @@ const server = createServer(async (req, res) => {
   }
 
   if (url.pathname === "/mcp") {
+    if (MCP_AUTH_SECRET) {
+      const expected = Buffer.from(`Bearer ${MCP_AUTH_SECRET}`);
+      const actual = Buffer.from(req.headers.authorization ?? "");
+      const matches =
+        expected.length === actual.length && timingSafeEqual(expected, actual);
+      if (!matches) {
+        res.writeHead(401, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
+        return;
+      }
+    }
     await handleMcpRequest(req, res);
     return;
   }

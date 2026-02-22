@@ -165,6 +165,16 @@ describe("POST /api/auth/register", () => {
     expect(data.error).toContain("8 characters");
   });
 
+  it("rejects password longer than 128 characters", async () => {
+    const res = await POST(jsonReq({
+      email: "nate@example.com",
+      password: "a".repeat(129),
+    }) as any);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("128 characters");
+  });
+
   // --- Duplicate prevention ---
 
   it("rejects duplicate email registration", async () => {
