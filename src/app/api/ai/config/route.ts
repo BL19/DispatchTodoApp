@@ -9,6 +9,7 @@ import {
   getDefaultBaseUrl,
   getDefaultModel,
   isAIProvider,
+  isValidProviderBaseUrl,
   normalizeBaseUrl,
   providerLabel,
 } from "@/lib/ai";
@@ -81,6 +82,10 @@ export const PUT = withAuth(async (req, session) => {
 
   if (baseUrl !== undefined && baseUrl !== null && typeof baseUrl !== "string") {
     return errorResponse("baseUrl must be a string or null", 400);
+  }
+
+  if (typeof baseUrl === "string" && !isValidProviderBaseUrl(baseUrl)) {
+    return errorResponse("baseUrl must be a valid HTTP or HTTPS URL", 400);
   }
 
   if (model !== undefined && (typeof model !== "string" || model.trim().length === 0)) {

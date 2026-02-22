@@ -2,6 +2,7 @@ import { withAuth, jsonResponse, errorResponse } from "@/lib/api";
 import { db } from "@/db";
 import { apiKeys } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { maskApiKey } from "@/lib/ai-encryption";
 
 /** GET /api/api-keys — list API keys for the current user */
 export const GET = withAuth(async (req, session) => {
@@ -17,7 +18,7 @@ export const GET = withAuth(async (req, session) => {
     .where(eq(apiKeys.userId, session.user!.id!))
     .orderBy(apiKeys.createdAt);
 
-  return jsonResponse(results);
+  return jsonResponse(results.map((k) => ({ ...k, key: maskApiKey(k.key) })));
 }, { allowApiKey: false });
 
 /** POST /api/api-keys — create a new API key */

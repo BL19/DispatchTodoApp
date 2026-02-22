@@ -133,16 +133,21 @@ export const POST = withAuth(async (req, session) => {
     .where(eq(chatConversations.id, conversationId));
 
   const mcpServerUrl = process.env.MCP_SERVER_URL?.trim() || "http://localhost:3001/mcp";
+  const mcpAuthSecret = process.env.MCP_AUTH_SECRET?.trim() || process.env.AUTH_SECRET?.trim() || null;
   let mcpClient: MCPClient | null = null;
   let mcpTools: any = undefined;
   let mcpAvailable = false;
 
   try {
+    const mcpHeaders: Record<string, string> = { "x-dispatch-user-id": userId };
+    if (mcpAuthSecret) {
+      mcpHeaders.Authorization = `Bearer ${mcpAuthSecret}`;
+    }
     mcpClient = await createMCPClient({
       transport: {
         type: "http",
         url: mcpServerUrl,
-        headers: { "x-dispatch-user-id": userId },
+        headers: mcpHeaders,
       },
     });
 
